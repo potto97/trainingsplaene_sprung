@@ -1,0 +1,1288 @@
+<html lang="de"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trainingsplan</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:        #2563eb;
+      --blue-light:  #eff6ff;
+      --blue-dark:   #1d4ed8;
+      --yellow-bg:   #fffbeb;
+      --yellow-bd:   #fde68a;
+      --yellow-tx:   #92400e;
+      --red:         #dc2626;
+      --red-light:   #fee2e2;
+      --green-bg:    #f0fdf4;
+      --green-bd:    #bbf7d0;
+      --green-tx:    #166534;
+      --orange-bg:   #fff7ed;
+      --orange-bd:   #fed7aa;
+      --orange-tx:   #c2410c;
+      --purple-bg:   #faf5ff;
+      --purple-bd:   #e9d5ff;
+      --purple-tx:   #7c3aed;
+      --g50:  #f9fafb;
+      --g100: #f3f4f6;
+      --g200: #e5e7eb;
+      --g300: #d1d5db;
+      --g400: #9ca3af;
+      --g500: #6b7280;
+      --g600: #4b5563;
+      --g700: #374151;
+      --g800: #1f2937;
+      --g900: #111827;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+      --shadow-md: 0 4px 12px rgba(0,0,0,.10);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--g50);
+      color: var(--g800);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ──────────────────────────────────────────── */
+    .header {
+      background: #fff;
+      border-top: 3px solid var(--blue);
+      border-bottom: 1px solid var(--g200);
+      padding: 13px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .header-title { font-size: 19px; font-weight: 800; color: var(--blue); line-height: 1.2; }
+    .header-sub   { font-size: 12px; color: var(--g400); margin-top: 1px; }
+    .header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+    .badge {
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-trainer { background: var(--blue-light); color: var(--blue); }
+    .badge-notes   { background: var(--yellow-bg); color: var(--yellow-tx); }
+
+    /* ── BUTTONS ──────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: background .15s, color .15s;
+      white-space: nowrap;
+    }
+    .btn-primary  { background: var(--blue);  color: #fff; }
+    .btn-primary:hover { background: var(--blue-dark); }
+    .btn-outline  { background: #fff; color: var(--g700); border: 1px solid var(--g300); }
+    .btn-outline:hover { background: var(--g50); }
+    .btn-ghost    { background: transparent; color: var(--g500); }
+    .btn-ghost:hover { background: var(--g100); color: var(--g700); }
+    .btn-danger   { background: var(--red-light); color: var(--red); }
+    .btn-danger:hover { background: #fecaca; }
+    .btn-sm { padding: 5px 10px; font-size: 13px; }
+    .btn-icon { padding: 6px; border-radius: 6px; }
+    .btn:disabled { opacity: .4; cursor: default; }
+
+    /* ── LAYOUT ──────────────────────────────────────────── */
+    .content {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 20px 16px 100px;
+    }
+
+    /* ── WEEK NAV ─────────────────────────────────────────── */
+    .week-nav {
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 10px 14px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .week-arrow {
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      background: var(--blue-light);
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--blue);
+      font-weight: 700;
+      transition: background .15s;
+      flex-shrink: 0;
+    }
+    .week-arrow:hover:not(:disabled) { background: #dbeafe; }
+    .week-arrow:disabled { opacity: .3; cursor: default; }
+    .week-label {
+      flex: 1;
+      text-align: center;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--g900);
+    }
+
+    /* ── DAY TABS ─────────────────────────────────────────── */
+    .day-tabs {
+      display: flex;
+      gap: 4px;
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 6px;
+      margin-bottom: 14px;
+      overflow-x: auto;
+    }
+    .day-tab {
+      flex: 1;
+      min-width: 42px;
+      padding: 7px 4px;
+      border: none;
+      background: transparent;
+      border-radius: 7px;
+      cursor: pointer;
+      text-align: center;
+      transition: background .15s, transform .1s;
+    }
+    .day-tab-name  { display: block; font-size: 13px; font-weight: 600; color: var(--g500); }
+    .day-tab-count { display: block; font-size: 11px; color: var(--g400); margin-top: 2px; }
+    /* Aktiver Tag: kräftiges Blau */
+    .day-tab.active { background: var(--blue); }
+    .day-tab.active .day-tab-name,
+    .day-tab.active .day-tab-count { color: #fff; }
+    /* Tag mit Übungen: helles Blau + kräftigerer Text */
+    .day-tab.filled:not(.active) { background: var(--blue-light); }
+    .day-tab.filled:not(.active) .day-tab-name  { color: var(--blue); font-weight: 700; }
+    .day-tab.filled:not(.active) .day-tab-count { color: var(--blue); opacity: .75; }
+    .day-tab:not(.active):hover { background: var(--g100); }
+
+    /* ── EXERCISE CARDS ───────────────────────────────────── */
+    .exercise-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .ex-card {
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border-left: 4px solid var(--blue);
+      overflow: hidden;
+      transition: box-shadow .15s, transform .1s;
+    }
+    .ex-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+
+    .ex-head {
+      padding: 14px 14px 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .ex-num {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--blue);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+      box-shadow: 0 2px 6px rgba(37,99,235,.35);
+    }
+    .ex-name {
+      flex: 1;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--g900);
+      line-height: 1.3;
+    }
+    .ex-edit-btn { flex-shrink: 0; margin-top: -2px; }
+
+    .ex-pills {
+      padding: 8px 14px 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    /* Basis-Pill */
+    .pill {
+      border-radius: 20px;
+      padding: 5px 11px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 600;
+    }
+    .pill-lbl { font-size: 11px; font-weight: 600; opacity: .75; }
+    .pill-val { font-size: 13px; }
+
+    /* Farb-Varianten der Pills */
+    .pill-sets      { background: var(--blue-light);   color: var(--blue-dark); }
+    .pill-reps      { background: var(--green-bg);     color: #15803d; }
+    .pill-pause     { background: var(--orange-bg);    color: var(--orange-tx); }
+    .pill-tempo     { background: var(--purple-bg);    color: var(--purple-tx); }
+    .pill-intensity { background: var(--red-light);    color: var(--red); }
+
+    .ex-video { padding: 8px 14px 0; }
+    .video-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--blue);
+      background: var(--blue-light);
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 6px 12px;
+      text-decoration: none;
+      transition: background .15s, border-color .15s;
+    }
+    .video-btn:hover { background: #dbeafe; border-color: #93c5fd; }
+    .video-btn-icon {
+      width: 22px; height: 22px;
+      background: var(--blue);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+      font-size: 9px;
+      flex-shrink: 0;
+    }
+
+    .ex-notes {
+      margin: 10px 14px 14px;
+      background: var(--yellow-bg);
+      border: 1px solid var(--yellow-bd);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .notes-lbl {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--yellow-tx);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 5px;
+    }
+    .notes-text { font-size: 14px; color: var(--g700); line-height: 1.5; white-space: pre-wrap; }
+    .notes-textarea {
+      width: 100%;
+      border: none;
+      background: transparent;
+      font-size: 14px;
+      color: var(--g700);
+      line-height: 1.5;
+      resize: vertical;
+      min-height: 64px;
+      font-family: inherit;
+      outline: none;
+    }
+
+    /* Spacer below last pill row */
+    .ex-bottom { height: 14px; }
+
+    /* ── EMPTY STATE ─────────────────────────────────────── */
+    .empty {
+      text-align: center;
+      padding: 56px 20px;
+      color: var(--g400);
+    }
+    .empty-icon { font-size: 42px; margin-bottom: 10px; }
+    .empty-title { font-size: 15px; font-weight: 600; color: var(--g500); }
+    .empty-sub   { font-size: 13px; margin-top: 4px; }
+
+    /* ── ADD EXERCISE BTN ────────────────────────────────── */
+    .add-btn {
+      width: 100%;
+      margin-top: 10px;
+      padding: 14px;
+      background: #fff;
+      border: 2px dashed var(--g300);
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--g400);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all .15s;
+    }
+    .add-btn:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+
+    /* ── SAVE BANNER ─────────────────────────────────────── */
+    .save-banner {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--g900);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 4px 20px rgba(0,0,0,.25);
+      z-index: 300;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s;
+      white-space: nowrap;
+    }
+    .save-banner.show { opacity: 1; pointer-events: all; }
+
+    /* ── TOAST ───────────────────────────────────────────── */
+    .toast {
+      position: fixed;
+      top: 72px;
+      right: 16px;
+      padding: 9px 14px;
+      background: var(--green-bg);
+      border: 1px solid var(--green-bd);
+      color: var(--green-tx);
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      z-index: 9999;
+      opacity: 0;
+      transform: translateY(-8px);
+      transition: all .25s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* ── MODAL ───────────────────────────────────────────── */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      backdrop-filter: blur(2px);
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal {
+      background: #fff;
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 480px;
+      max-height: 92vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    }
+    .modal-lg { max-width: 520px; }
+    .modal-head {
+      padding: 18px 18px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-title { font-size: 17px; font-weight: 700; color: var(--g900); }
+    .modal-body  { padding: 16px 18px 20px; }
+
+    /* ── FORM ────────────────────────────────────────────── */
+    .form-group { margin-bottom: 14px; }
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--g600);
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      margin-bottom: 5px;
+    }
+    .form-input, .form-textarea {
+      width: 100%;
+      padding: 9px 11px;
+      border: 1px solid var(--g300);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      color: var(--g800);
+      font-family: inherit;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .form-input:focus, .form-textarea:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+    }
+    .form-input.error { border-color: var(--red); }
+    .form-textarea { resize: vertical; min-height: 76px; }
+    .form-hint { font-size: 12px; color: var(--g400); margin-top: 4px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--g200);
+    }
+    .form-actions-left { margin-right: auto; }
+
+    /* ── PIN MODAL ───────────────────────────────────────── */
+    .pin-input { font-size: 22px; text-align: center; letter-spacing: 6px; }
+    .pin-error {
+      font-size: 13px;
+      color: var(--red);
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    /* ── WEEK LIST ───────────────────────────────────────── */
+    .week-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 12px;
+      background: var(--g50);
+      border-radius: 8px;
+      margin-bottom: 6px;
+    }
+    .week-item-name { font-size: 14px; font-weight: 600; color: var(--g800); }
+
+    /* ── HIDDEN BY DEFAULT ───────────────────────────────── */
+    [data-role="trainer"], [data-role="notes"] { display: none !important; }
+    body.mode-trainer [data-role="trainer"] { display: flex !important; }
+    body.mode-trainer [data-role="trainer"].block { display: block !important; }
+    body.mode-notes   [data-role="notes"]   { display: flex !important; }
+    body.mode-notes   [data-role="notes"].block { display: block !important; }
+
+    /* ── RESPONSIVE ─────────────────────────────────────── */
+    @media (max-width: 500px) {
+      .header-title { font-size: 16px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .day-tab-name { font-size: 12px; }
+    }
+  </style>
+</head>
+<body style="overscroll-behavior-x: auto;">
+
+<!-- Toast -->
+<div class="toast" id="toast">✓ Übung gespeichert</div>
+
+<!-- Header -->
+<header class="header">
+  <div>
+    <div class="header-title" id="hd-title">Trainingsplan</div>
+    <div class="header-sub" id="hd-sub">Athletiktraining</div>
+  </div>
+  <div class="header-right">
+    <span class="badge badge-trainer" id="badge-trainer" style="">✏️ Trainer</span>
+    <span class="badge badge-notes" id="badge-notes" style="display:none">📝 Notizen</span>
+    <button class="btn btn-ghost btn-sm" id="btn-logout" style="" onclick="logout()">Abmelden</button>
+    <button class="btn btn-outline btn-sm" id="btn-login" onclick="showPinModal()" style="display: none;">Anmelden</button>
+  </div>
+</header>
+
+<!-- Content -->
+<div class="content">
+
+  <!-- Week navigation -->
+  <div class="week-nav">
+    <button class="week-arrow" id="btn-prev" onclick="changeWeek(-1)" disabled="">‹</button>
+    <div class="week-label" id="week-label">Woche 1</div>
+    <button class="week-arrow" id="btn-next" onclick="changeWeek(1)" disabled="">›</button>
+    <button class="btn btn-outline btn-sm" data-role="trainer" onclick="showWeekModal()" style="gap: 4px; margin-left: 4px; display: flex;">
+      ⚙️ <span>Wochen</span>
+    </button>
+  </div>
+
+  <!-- Day tabs -->
+  <div class="day-tabs" id="day-tabs"><button class="day-tab"><span class="day-tab-name">Mo</span><span class="day-tab-count">–</span></button><button class="day-tab active filled"><span class="day-tab-name">Di</span><span class="day-tab-count">7 Üb.</span></button><button class="day-tab"><span class="day-tab-name">Mi</span><span class="day-tab-count">–</span></button><button class="day-tab"><span class="day-tab-name">Do</span><span class="day-tab-count">–</span></button><button class="day-tab"><span class="day-tab-name">Fr</span><span class="day-tab-count">–</span></button><button class="day-tab"><span class="day-tab-name">Sa</span><span class="day-tab-count">–</span></button><button class="day-tab"><span class="day-tab-name">So</span><span class="day-tab-count">–</span></button></div>
+
+  <!-- Exercise list -->
+  <div class="exercise-list" id="ex-list"><div class="ex-card">
+      <div class="ex-head">
+        <div class="ex-num">1</div>
+        <div class="ex-name">Seated Squat Jumps</div>
+        <button class="btn btn-ghost btn-icon ex-edit-btn" onclick="showExModal('ex_1783866365396')" title="Bearbeiten">✏️</button>
+      </div>
+      <div class="ex-pills"><div class="pill pill-sets"><span class="pill-lbl">📋 Sätze</span><span class="pill-val">4</span></div><div class="pill pill-reps"><span class="pill-lbl">🔁 Wdh.</span><span class="pill-val">6</span></div><div class="pill pill-pause"><span class="pill-lbl">⏱️ Pause</span><span class="pill-val">120 Sek</span></div><div class="pill pill-intensity"><span class="pill-lbl">🎯 Intensität</span><span class="pill-val">RPE 10</span></div></div>
+      <div class="ex-video"><a href="https://www.youtube.com/watch?v=jwY9A4HCl_Q" target="_blank" rel="noopener" class="video-btn"><span class="video-btn-icon">▶</span> Video ansehen</a></div>
+      
+      <div class="ex-bottom"></div></div><div class="ex-card">
+      <div class="ex-head">
+        <div class="ex-num">2</div>
+        <div class="ex-name">Lateral Broad to Vertical Jump</div>
+        <button class="btn btn-ghost btn-icon ex-edit-btn" onclick="showExModal('ex_1783866417345')" title="Bearbeiten">✏️</button>
+      </div>
+      <div class="ex-pills"><div class="pill pill-sets"><span class="pill-lbl">📋 Sätze</span><span class="pill-val">3</span></div><div class="pill pill-reps"><span class="pill-lbl">🔁 Wdh.</span><span class="pill-val">3/Bein</span></div><div class="pill pill-pause"><span class="pill-lbl">⏱️ Pause</span><span class="pill-val">120 Sek</span></div><div class="pill pill-intensity"><span class="pill-lbl">🎯 Intensität</span><span class="pill-val">RPE 10</span></div></div>
+      <div class="ex-video"><a href="https://www.youtube.com/watch?v=Wi8RE0q5eHQ&amp;feature=youtu.be" target="_blank" rel="noopener" class="video-btn"><span class="video-btn-icon">▶</span> Video ansehen</a></div>
+      
+        <div class="ex-notes">
+          <div class="notes-lbl">📝 Notiz</div>
+          <div class="notes-text">Ihr steht seitlich versetzt zur Box. Durchführung bleibt ansonsten gleich.</div>
+        </div>
+      <div class="ex-bottom"></div></div><div class="ex-card">
+      <div class="ex-head">
+        <div class="ex-num">3</div>
+        <div class="ex-name">Sprints</div>
+        <button class="btn btn-ghost btn-icon ex-edit-btn" onclick="showExModal('ex_1783866430295')" title="Bearbeiten">✏️</button>
+      </div>
+      
+      
+      
+        <div class="ex-notes">
+          <div class="notes-lbl">📝 Notiz</div>
+          <div class="notes-text">1x20m (Außen) + 3x20m (Rückraum; 2x linear + 1x curved)
+3x30m (Außen; 2x linear + 1x curved)) + 1x30m (Rückraum)</div>
+        </div>
+      <div class="ex-bottom"></div></div><div class="ex-card">
+      <div class="ex-head">
+        <div class="ex-num">4</div>
+        <div class="ex-name">Heavy Squats</div>
+        <button class="btn btn-ghost btn-icon ex-edit-btn" onclick="showExModal('ex_1783866472211')" title="Bearbeiten">✏️</button>
+      </div>
+      <div class="ex-pills"><div class="pill pill-sets"><span class="pill-lbl">📋 Sätze</span><span class="pill-val">3</span></div><div class="pill pill-reps"><span class="pill-lbl">🔁 Wdh.</span><span class="pill-val">6-8</span></div><div class="pill pill-pause"><span class="pill-lbl">⏱️ Pause</span><span class="pill-val">120 Sek</span></div><div class="pill pill-tempo"><span class="pill-lbl">⚡ Tempo</span><span class="pill-val">0-0-X-0</span></div><div class="pill pill-intensity"><span class="pill-lbl">🎯 Intensität</span><span class="pill-val">85% der Testung</span></div></div>
+      
+      
+        <div class="ex-notes">
+          <div class="notes-lbl">📝 Notiz</div>
+          <div class="notes-text">0-0-X-0 = 0 Sekunden Exzentrik, 0 Sekunden unten halten, Explosive Aufwärtsbewegung, 0 Sekunden oben halten</div>
+        </div>
+      <div class="ex-bottom"></div></div><div class="ex-card">
+      <div class="ex-head">
+        <div class="ex-num">5</div>
+        <div class="ex-name">Langhantel-Rudern</div>
+        <button class="btn btn-ghost btn-icon ex-edit-btn" onclick="showExModal('ex_1783866499595')" title="Bearbeiten">✏️</button>
+      </div>
+      <div class="ex-pills"><div class="pill pill-sets"><span class="pill-lbl">📋 Sätze</span><span class="pill-val">3</span></div><div class="pill pill-reps"><span class="pill-lbl">🔁 Wdh.</span><span class="pill-val">8-10</span></div><div class="pill pill-pause"><span class="pill-lbl">⏱️ Pause</span><span class="pill-val">90-120 Sek</span></div><div class="pill pill-intensity"><span class="pill-lbl">🎯 Intensität</span><span class="pill-val">RPE 8-9</span></div></div>
+      
+      
+      <div class="ex-bottom"></div></div><div class="ex-card">
+      <div class="ex-head">
+        <div class="ex-num">6</div>
+        <div class="ex-name">Alternierendes KH Schulterdrücken</div>
+        <button class="btn btn-ghost btn-icon ex-edit-btn" onclick="showExModal('ex_1783866533596')" title="Bearbeiten">✏️</button>
+      </div>
+      <div class="ex-pills"><div class="pill pill-sets"><span class="pill-lbl">📋 Sätze</span><span class="pill-val">3</span></div><div class="pill pill-reps"><span class="pill-lbl">🔁 Wdh.</span><span class="pill-val">6-8</span></div><div class="pill pill-pause"><span class="pill-lbl">⏱️ Pause</span><span class="pill-val">90-120 Sek</span></div><div class="pill pill-intensity"><span class="pill-lbl">🎯 Intensität</span><span class="pill-val">RPE 8</span></div></div>
+      
+      
+        <div class="ex-notes">
+          <div class="notes-lbl">📝 Notiz</div>
+          <div class="notes-text">Ähnlich wie klassisches Schulterdrücken, nur dass ihr links und rechts abwechselnd (alternierend) drückt.</div>
+        </div>
+      <div class="ex-bottom"></div></div><div class="ex-card">
+      <div class="ex-head">
+        <div class="ex-num">7</div>
+        <div class="ex-name">Med Ball Throws</div>
+        <button class="btn btn-ghost btn-icon ex-edit-btn" onclick="showExModal('ex_1783866549845')" title="Bearbeiten">✏️</button>
+      </div>
+      <div class="ex-pills"><div class="pill pill-sets"><span class="pill-lbl">📋 Sätze</span><span class="pill-val">3</span></div><div class="pill pill-reps"><span class="pill-lbl">🔁 Wdh.</span><span class="pill-val">6</span></div><div class="pill pill-pause"><span class="pill-lbl">⏱️ Pause</span><span class="pill-val">120 Sek</span></div><div class="pill pill-intensity"><span class="pill-lbl">🎯 Intensität</span><span class="pill-val">RPE 10</span></div></div>
+      
+      
+      <div class="ex-bottom"></div></div></div>
+
+  <!-- Add exercise (trainer only) -->
+  <div id="wrap-add" style="display: block; margin-top: 0px;">
+    <button class="add-btn" onclick="showExModal(null)">＋ Übung hinzufügen</button>
+  </div>
+
+</div>
+
+<!-- Save banner -->
+<div class="save-banner" id="save-banner">
+  <span>Ungespeicherte Änderungen</span>
+  <button class="btn btn-primary btn-sm" onclick="exportFile()">💾 Speichern &amp; Exportieren</button>
+</div>
+
+<!-- ══════════════ MODALS ══════════════ -->
+
+<!-- PIN Modal -->
+<div class="overlay" id="modal-pin" style="display: none;" onclick="overlayClose('modal-pin',event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <div class="modal-title">Anmelden</div>
+      <button class="btn btn-ghost btn-icon" onclick="hide('modal-pin')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:14px;color:var(--g500);margin-bottom:14px;">
+        Gib deinen PIN ein, um Änderungen vorzunehmen.
+      </p>
+      <div class="form-group">
+        <input type="password" class="form-input pin-input" id="pin-input" placeholder="••••" maxlength="12" onkeydown="if(event.key==='Enter')checkPin()">
+      </div>
+      <div class="pin-error" id="pin-error" style="display: block;">Falscher PIN. Bitte erneut versuchen.</div>
+      <div class="form-actions" style="border:none;padding:0;margin-top:14px;">
+        <button class="btn btn-outline" onclick="hide('modal-pin')">Abbrechen</button>
+        <button class="btn btn-primary" onclick="checkPin()">Anmelden</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Exercise Modal (Trainer) -->
+<div class="overlay" id="modal-ex" style="display: none;" onclick="overlayClose('modal-ex',event)">
+  <div class="modal modal-lg" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <div class="modal-title" id="ex-modal-title">Übung bearbeiten</div>
+      <button class="btn btn-ghost btn-icon" onclick="hide('modal-ex')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="ex-edit-id" value="ex_1783866472211">
+
+      <div class="form-group">
+        <label class="form-label">Name der Übung *</label>
+        <input type="text" class="form-input" id="ex-name" placeholder="z.B. Kniebeuge">
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Sätze</label>
+          <input type="text" class="form-input" id="ex-sets" placeholder="z.B. 4">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Wiederholungen</label>
+          <input type="text" class="form-input" id="ex-reps" placeholder="z.B. 8 oder 6–8">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Pause</label>
+          <input type="text" class="form-input" id="ex-pause" placeholder="z.B. 90 Sek.">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tempo</label>
+          <input type="text" class="form-input" id="ex-tempo" placeholder="z.B. 3-1-1">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Intensität</label>
+        <input type="text" class="form-input" id="ex-intensity" placeholder="z.B. 75 % oder RPE 7">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Video-Link</label>
+        <input type="url" class="form-input" id="ex-video" placeholder="https://youtube.com/...">
+        <p class="form-hint">YouTube oder beliebiger Video-Link</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Notizen</label>
+        <textarea class="form-textarea" id="ex-notes" placeholder="Anmerkungen zur Übung …"></textarea>
+      </div>
+
+      <div class="form-actions">
+        <div class="form-actions-left">
+          <button class="btn btn-danger btn-sm" id="btn-delete-ex" onclick="deleteExercise()" style="display: inline-flex;">🗑 Löschen</button>
+        </div>
+        <button class="btn btn-outline" onclick="hide('modal-ex')">Abbrechen</button>
+        <button class="btn btn-primary" onclick="saveExercise()">Speichern</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Week Manager Modal -->
+<div class="overlay" id="modal-weeks" style="display:none" onclick="overlayClose('modal-weeks',event)">
+  <div class="modal modal-lg" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <div class="modal-title">Einstellungen</div>
+      <button class="btn btn-ghost btn-icon" onclick="hide('modal-weeks')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <p class="form-label" style="margin-bottom:8px;">Wochen</p>
+      <div id="week-list"></div>
+      <button class="btn btn-outline btn-sm" style="width:100%;justify-content:center;margin-bottom:18px;" onclick="addWeek()">
+        ＋ Neue Woche
+      </button>
+
+      <div class="form-grid" style="margin-bottom:14px;">
+        <div class="form-group">
+          <label class="form-label">Planname</label>
+          <input type="text" class="form-input" id="cfg-name" placeholder="z.B. Saisonvorbereitung 2025">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Untertitel</label>
+          <input type="text" class="form-input" id="cfg-sub" placeholder="z.B. Volleyballmannschaft">
+        </div>
+      </div>
+
+      <p class="form-label" style="margin-bottom:8px;">PINs ändern <span style="font-weight:400;text-transform:none;font-size:12px;color:var(--g400)">(leer lassen = unverändert)</span></p>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Trainer-PIN</label>
+          <input type="password" class="form-input" id="cfg-pin-trainer" placeholder="Neuer PIN">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notizen-PIN</label>
+          <input type="password" class="form-input" id="cfg-pin-notes" placeholder="Neuer PIN">
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-outline" onclick="hide('modal-weeks')">Abbrechen</button>
+        <button class="btn btn-primary" onclick="saveSettings()">Übernehmen</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ DATA ══════════════ -->
+<script id="plan-data" type="application/json">
+{
+  "planName": "Trainingsplan",
+  "planSubtitle": "Athletiktraining",
+  "trainerPin": "5678",
+  "notesPin": "1234",
+  "weeks": [
+    {
+      "id": "w1",
+      "name": "Woche 1",
+      "days": {
+        "Mo": [],
+        "Di": [
+          {
+            "name": "Seated Squat Jumps",
+            "sets": "4",
+            "reps": "6",
+            "pause": "120 Sek",
+            "tempo": "",
+            "intensity": "RPE 10",
+            "videoLink": "https://www.youtube.com/watch?v=jwY9A4HCl_Q",
+            "notes": "",
+            "id": "ex_1783866365396"
+          },
+          {
+            "name": "Lateral Broad to Vertical Jump",
+            "sets": "3",
+            "reps": "3/Bein",
+            "pause": "120 Sek",
+            "tempo": "",
+            "intensity": "RPE 10",
+            "videoLink": "https://www.youtube.com/watch?v=Wi8RE0q5eHQ&feature=youtu.be",
+            "notes": "Ihr steht seitlich versetzt zur Box. Durchführung bleibt ansonsten gleich.",
+            "id": "ex_1783866417345"
+          },
+          {
+            "name": "Sprints",
+            "sets": "",
+            "reps": "",
+            "pause": "",
+            "tempo": "",
+            "intensity": "",
+            "videoLink": "",
+            "notes": "1x20m (Außen) + 3x20m (Rückraum; 2x linear + 1x curved)\n3x30m (Außen; 2x linear + 1x curved)) + 1x30m (Rückraum)",
+            "id": "ex_1783866430295"
+          },
+          {
+            "name": "Heavy Squats",
+            "sets": "3",
+            "reps": "6-8",
+            "pause": "120 Sek",
+            "tempo": "0-0-X-0",
+            "intensity": "85% der Testung",
+            "videoLink": "",
+            "notes": "0-0-X-0 = 0 Sekunden Exzentrik, 0 Sekunden unten halten, Explosive Aufwärtsbewegung, 0 Sekunden oben halten",
+            "id": "ex_1783866472211"
+          },
+          {
+            "name": "Langhantel-Rudern",
+            "sets": "3",
+            "reps": "8-10",
+            "pause": "90-120 Sek",
+            "tempo": "",
+            "intensity": "RPE 8-9",
+            "videoLink": "",
+            "notes": "",
+            "id": "ex_1783866499595"
+          },
+          {
+            "name": "Alternierendes KH Schulterdrücken",
+            "sets": "3",
+            "reps": "6-8",
+            "pause": "90-120 Sek",
+            "tempo": "",
+            "intensity": "RPE 8",
+            "videoLink": "",
+            "notes": "Ähnlich wie klassisches Schulterdrücken, nur dass ihr links und rechts abwechselnd (alternierend) drückt.",
+            "id": "ex_1783866533596"
+          },
+          {
+            "name": "Med Ball Throws",
+            "sets": "3",
+            "reps": "6",
+            "pause": "120 Sek",
+            "tempo": "",
+            "intensity": "RPE 10",
+            "videoLink": "",
+            "notes": "",
+            "id": "ex_1783866549845"
+          }
+        ],
+        "Mi": [],
+        "Do": [],
+        "Fr": [],
+        "Sa": [],
+        "So": []
+      }
+    }
+  ]
+}
+</script>
+
+<!-- ══════════════ APP ══════════════ -->
+<script>
+/* ── State ─────────────────────────────────────────────── */
+let plan        = JSON.parse(document.getElementById('plan-data').textContent);
+let weekIdx     = 0;
+let activeDay   = 'Mo';
+let mode        = 'view';   // 'view' | 'trainer' | 'notes'
+let dirty       = false;
+
+const DAYS = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+const DAY_LONG = { Mo:'Montag', Di:'Dienstag', Mi:'Mittwoch', Do:'Donnerstag',
+                   Fr:'Freitag', Sa:'Samstag', So:'Sonntag' };
+
+/* ── Boot ──────────────────────────────────────────────── */
+function boot() {
+  updateHeader();
+  renderWeekNav();
+  renderDayTabs();
+  renderExercises();
+}
+
+/* ── Header ────────────────────────────────────────────── */
+function updateHeader() {
+  document.getElementById('hd-title').textContent = plan.planName;
+  document.getElementById('hd-sub').textContent   = plan.planSubtitle;
+}
+
+/* ── Mode ──────────────────────────────────────────────── */
+function applyMode() {
+  const isTrainer = mode === 'trainer';
+  const isNotes   = mode === 'notes';
+
+  // Badges
+  document.getElementById('badge-trainer').style.display = isTrainer ? '' : 'none';
+  document.getElementById('badge-notes').style.display   = isNotes   ? '' : 'none';
+
+  // Login/Logout
+  document.getElementById('btn-login').style.display  = mode === 'view' ? '' : 'none';
+  document.getElementById('btn-logout').style.display = mode !== 'view' ? '' : 'none';
+
+  // Trainer-only elements (CSS data-role approach als Backup)
+  document.querySelectorAll('[data-role="trainer"]').forEach(el => {
+    el.style.display = isTrainer ? (el.classList.contains('block') ? 'block' : 'flex') : 'none';
+  });
+  document.querySelectorAll('[data-role="notes"]').forEach(el => {
+    el.style.display = isNotes ? (el.classList.contains('block') ? 'block' : 'flex') : 'none';
+  });
+
+  // "Übung hinzufügen"-Button explizit steuern
+  document.getElementById('wrap-add').style.display = isTrainer ? 'block' : 'none';
+
+  renderExercises();
+}
+
+function logout() {
+  mode = 'view';
+  applyMode();
+  toast('Abgemeldet');
+}
+
+/* ── PIN ───────────────────────────────────────────────── */
+function showPinModal() {
+  document.getElementById('pin-input').value = '';
+  document.getElementById('pin-error').style.display = 'none';
+  show('modal-pin');
+  setTimeout(() => document.getElementById('pin-input').focus(), 80);
+}
+
+function checkPin() {
+  const val = document.getElementById('pin-input').value;
+  if (val === plan.trainerPin) {
+    hide('modal-pin');
+    mode = 'trainer';
+    applyMode();
+    toast('✓ Als Trainer angemeldet');
+  } else if (val === plan.notesPin) {
+    hide('modal-pin');
+    mode = 'notes';
+    applyMode();
+    toast('✓ Als Notizen-Editor angemeldet');
+  } else {
+    document.getElementById('pin-error').style.display = 'block';
+    document.getElementById('pin-input').value = '';
+    document.getElementById('pin-input').focus();
+  }
+}
+
+/* ── Week navigation ───────────────────────────────────── */
+function renderWeekNav() {
+  document.getElementById('week-label').textContent  = plan.weeks[weekIdx].name;
+  document.getElementById('btn-prev').disabled = weekIdx === 0;
+  document.getElementById('btn-next').disabled = weekIdx === plan.weeks.length - 1;
+}
+
+function changeWeek(dir) {
+  const n = weekIdx + dir;
+  if (n >= 0 && n < plan.weeks.length) {
+    weekIdx = n;
+    renderWeekNav();
+    renderDayTabs();
+    renderExercises();
+  }
+}
+
+/* ── Day tabs ──────────────────────────────────────────── */
+function renderDayTabs() {
+  const days  = plan.weeks[weekIdx].days;
+  const wrap  = document.getElementById('day-tabs');
+  wrap.innerHTML = '';
+  DAYS.forEach(d => {
+    const count = (days[d] || []).length;
+    const btn = document.createElement('button');
+    btn.className = 'day-tab' + (d === activeDay ? ' active' : '') + (count > 0 ? ' filled' : '');
+    btn.innerHTML = `<span class="day-tab-name">${d}</span><span class="day-tab-count">${count ? count + ' Üb.' : '–'}</span>`;
+    let tapped = false;
+    btn.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      tapped = true;
+      activeDay = d;
+      renderDayTabs();
+      renderExercises();
+    });
+    btn.addEventListener('click', () => {
+      if (tapped) { tapped = false; return; }
+      activeDay = d;
+      renderDayTabs();
+      renderExercises();
+    });
+    wrap.appendChild(btn);
+  });
+}
+
+/* ── Exercises ─────────────────────────────────────────── */
+function renderExercises() {
+  const exercises = plan.weeks[weekIdx].days[activeDay] || [];
+  const wrap = document.getElementById('ex-list');
+  wrap.innerHTML = '';
+
+  if (exercises.length === 0) {
+    if (mode !== 'trainer') {
+      wrap.innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">🏃</div>
+          <div class="empty-title">Kein Training</div>
+          <div class="empty-sub">Für ${DAY_LONG[activeDay]} ist kein Training geplant.</div>
+        </div>`;
+    }
+    return;
+  }
+
+  exercises.forEach((ex, i) => {
+    const card = document.createElement('div');
+    card.className = 'ex-card';
+
+    /* Pills */
+    let pills = '';
+    if (ex.sets)      pills += pill('Sätze',      ex.sets);
+    if (ex.reps)      pills += pill('Wdh.',        ex.reps);
+    if (ex.pause)     pills += pill('Pause',       ex.pause);
+    if (ex.tempo)     pills += pill('Tempo',       ex.tempo);
+    if (ex.intensity) pills += pill('Intensität',  ex.intensity);
+
+    /* Edit button */
+    const editBtn = mode === 'trainer'
+      ? `<button class="btn btn-ghost btn-icon ex-edit-btn" onclick="showExModal('${ex.id}')" title="Bearbeiten">✏️</button>`
+      : '';
+
+    /* Notes section */
+    let notesHTML = '';
+    if (mode === 'notes') {
+      notesHTML = `
+        <div class="ex-notes">
+          <div class="notes-lbl">📝 Notiz</div>
+          <textarea class="notes-textarea"
+                    placeholder="Notiz hinzufügen …"
+                    onchange="updateNote('${ex.id}', this.value)">${esc(ex.notes || '')}</textarea>
+        </div>`;
+    } else if (ex.notes) {
+      notesHTML = `
+        <div class="ex-notes">
+          <div class="notes-lbl">📝 Notiz</div>
+          <div class="notes-text">${esc(ex.notes)}</div>
+        </div>`;
+    }
+
+    card.innerHTML = `
+      <div class="ex-head">
+        <div class="ex-num">${i + 1}</div>
+        <div class="ex-name">${esc(ex.name)}</div>
+        ${editBtn}
+      </div>
+      ${pills ? `<div class="ex-pills">${pills}</div>` : ''}
+      ${ex.videoLink ? `<div class="ex-video"><a href="${esc(ex.videoLink)}" target="_blank" rel="noopener" class="video-btn"><span class="video-btn-icon">▶</span> Video ansehen</a></div>` : ''}
+      ${notesHTML}
+      <div class="ex-bottom"></div>`;
+
+    wrap.appendChild(card);
+  });
+}
+
+const PILL_CFG = {
+  'Sätze':      { icon: '📋', cls: 'pill-sets' },
+  'Wdh.':       { icon: '🔁', cls: 'pill-reps' },
+  'Pause':      { icon: '⏱️', cls: 'pill-pause' },
+  'Tempo':      { icon: '⚡', cls: 'pill-tempo' },
+  'Intensität': { icon: '🎯', cls: 'pill-intensity' },
+};
+
+function pill(label, value) {
+  const cfg = PILL_CFG[label] || { icon: '', cls: '' };
+  return `<div class="pill ${cfg.cls}"><span class="pill-lbl">${cfg.icon} ${label}</span><span class="pill-val">${esc(value)}</span></div>`;
+}
+
+function updateNote(id, val) {
+  const ex = findEx(id);
+  if (ex) { ex.notes = val; markDirty(); }
+}
+
+/* ── Exercise Modal ────────────────────────────────────── */
+function showExModal(id) {
+  const isEdit = !!id;
+  document.getElementById('ex-modal-title').textContent = isEdit ? 'Übung bearbeiten' : 'Übung hinzufügen';
+  document.getElementById('btn-delete-ex').style.display = (isEdit && mode === 'trainer') ? 'inline-flex' : 'none';
+  document.getElementById('ex-edit-id').value = id || '';
+
+  const fields = ['name','sets','reps','pause','tempo','intensity','video','notes'];
+  if (isEdit) {
+    const ex = findEx(id);
+    document.getElementById('ex-name').value      = ex.name      || '';
+    document.getElementById('ex-sets').value      = ex.sets      || '';
+    document.getElementById('ex-reps').value      = ex.reps      || '';
+    document.getElementById('ex-pause').value     = ex.pause     || '';
+    document.getElementById('ex-tempo').value     = ex.tempo     || '';
+    document.getElementById('ex-intensity').value = ex.intensity || '';
+    document.getElementById('ex-video').value     = ex.videoLink || '';
+    document.getElementById('ex-notes').value     = ex.notes     || '';
+  } else {
+    fields.forEach(f => { document.getElementById('ex-' + f).value = ''; });
+  }
+
+  document.getElementById('ex-name').classList.remove('error');
+  show('modal-ex');
+  setTimeout(() => document.getElementById('ex-name').focus(), 80);
+}
+
+function saveExercise() {
+  const name = document.getElementById('ex-name').value.trim();
+  if (!name) {
+    document.getElementById('ex-name').classList.add('error');
+    document.getElementById('ex-name').focus();
+    return;
+  }
+  document.getElementById('ex-name').classList.remove('error');
+
+  const id = document.getElementById('ex-edit-id').value;
+  const data = {
+    name:      name,
+    sets:      document.getElementById('ex-sets').value.trim(),
+    reps:      document.getElementById('ex-reps').value.trim(),
+    pause:     document.getElementById('ex-pause').value.trim(),
+    tempo:     document.getElementById('ex-tempo').value.trim(),
+    intensity: document.getElementById('ex-intensity').value.trim(),
+    videoLink: document.getElementById('ex-video').value.trim(),
+    notes:     document.getElementById('ex-notes').value.trim(),
+  };
+
+  if (id) {
+    const ex = findEx(id);
+    if (ex) Object.assign(ex, data);
+  } else {
+    data.id = 'ex_' + Date.now();
+    plan.weeks[weekIdx].days[activeDay].push(data);
+  }
+
+  hide('modal-ex');
+  markDirty();
+  renderDayTabs();
+  renderExercises();
+  toast('✓ Übung gespeichert');
+}
+
+function deleteExercise() {
+  const id = document.getElementById('ex-edit-id').value;
+  if (!id || !confirm('Übung wirklich löschen?')) return;
+  const arr = plan.weeks[weekIdx].days[activeDay];
+  plan.weeks[weekIdx].days[activeDay] = arr.filter(e => e.id !== id);
+  hide('modal-ex');
+  markDirty();
+  renderDayTabs();
+  renderExercises();
+  toast('Übung gelöscht');
+}
+
+/* ── Week Manager ──────────────────────────────────────── */
+function showWeekModal() {
+  document.getElementById('cfg-name').value        = plan.planName;
+  document.getElementById('cfg-sub').value         = plan.planSubtitle;
+  document.getElementById('cfg-pin-trainer').value = '';
+  document.getElementById('cfg-pin-notes').value   = '';
+  buildWeekList();
+  show('modal-weeks');
+}
+
+function buildWeekList() {
+  const wrap = document.getElementById('week-list');
+  wrap.innerHTML = '';
+  plan.weeks.forEach((w, i) => {
+    const row = document.createElement('div');
+    row.className = 'week-item';
+    row.innerHTML = `
+      <span class="week-item-name">${esc(w.name)}</span>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-outline btn-sm" onclick="renameWeek(${i})">Umbenennen</button>
+        ${plan.weeks.length > 1 ? `<button class="btn btn-danger btn-sm" onclick="removeWeek(${i})">✕</button>` : ''}
+      </div>`;
+    wrap.appendChild(row);
+  });
+}
+
+function addWeek() {
+  const n = plan.weeks.length + 1;
+  plan.weeks.push({
+    id: 'w' + Date.now(),
+    name: 'Woche ' + n,
+    days: { Mo:[], Di:[], Mi:[], Do:[], Fr:[], Sa:[], So:[] }
+  });
+  buildWeekList();
+}
+
+function removeWeek(i) {
+  if (plan.weeks.length <= 1 || !confirm(`"${plan.weeks[i].name}" löschen?`)) return;
+  plan.weeks.splice(i, 1);
+  if (weekIdx >= plan.weeks.length) weekIdx = plan.weeks.length - 1;
+  buildWeekList();
+}
+
+function renameWeek(i) {
+  const name = prompt('Neuer Name:', plan.weeks[i].name);
+  if (name && name.trim()) { plan.weeks[i].name = name.trim(); buildWeekList(); }
+}
+
+function saveSettings() {
+  const name = document.getElementById('cfg-name').value.trim();
+  const sub  = document.getElementById('cfg-sub').value.trim();
+  const tp   = document.getElementById('cfg-pin-trainer').value;
+  const np   = document.getElementById('cfg-pin-notes').value;
+
+  if (name) plan.planName     = name;
+  if (sub)  plan.planSubtitle = sub;
+  if (tp)   plan.trainerPin   = tp;
+  if (np)   plan.notesPin     = np;
+
+  hide('modal-weeks');
+  markDirty();
+  updateHeader();
+  renderWeekNav();
+  toast('✓ Einstellungen gespeichert');
+}
+
+/* ── Export ────────────────────────────────────────────── */
+function exportFile() {
+  const json   = JSON.stringify(plan, null, 2);
+
+  // Save-Banner 'show' temporär entfernen, damit er nicht mit in den Export geht
+  const banner = document.getElementById('save-banner');
+  banner.classList.remove('show');
+  const source = document.documentElement.outerHTML;
+  banner.classList.add('show'); // Im laufenden Tab wiederherstellen
+
+  // Datenblock ersetzen: von plan-data-Öffnungs-Tag bis zum Schließ-Tag
+  const marker1 = 'id="plan-data"';
+  const closeTag = '</' + 'script>';
+  const i1 = source.indexOf(marker1);
+  const iOpen = source.indexOf('>', i1) + 1;
+  const iClose = source.indexOf(closeTag, iOpen);
+  const updated = source.substring(0, iOpen) + '\n' + json + '\n' + source.substring(iClose);
+
+  const blob = new Blob([updated], { type: 'text/html;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = sanitizeFilename(plan.planName) + '.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  dirty = false;
+  document.getElementById('save-banner').classList.remove('show');
+  toast('✓ Datei gespeichert & heruntergeladen');
+}
+
+function sanitizeFilename(s) {
+  return s.replace(/[^a-zA-ZÄÖÜäöüß0-9_\- ]/g, '').trim().replace(/\s+/g, '_') || 'Trainingsplan';
+}
+
+/* ── Helpers ───────────────────────────────────────────── */
+function findEx(id) {
+  const days = plan.weeks[weekIdx].days;
+  for (const d of DAYS) {
+    const ex = (days[d] || []).find(e => e.id === id);
+    if (ex) return ex;
+  }
+  return null;
+}
+
+function markDirty() {
+  dirty = true;
+  document.getElementById('save-banner').classList.add('show');
+}
+
+function esc(s) {
+  if (!s) return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function show(id) { document.getElementById(id).style.display = 'flex'; }
+function hide(id) { document.getElementById(id).style.display = 'none'; }
+
+function overlayClose(id, e) {
+  if (e.target === document.getElementById(id)) hide(id);
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+/* ── Start ─────────────────────────────────────────────── */
+boot();
+</script>
+
+
+</body></html>
